@@ -1,3 +1,5 @@
+<!-- TODO: 將所有文檔繁中化 -->
+
 # <center> aquar系统搭建指南
 
 受到 https://github.com/firemakergk/aquar-build-helper 的啟發，將這套環境架在自家，將安裝所使用的文件與紀錄持續開源，姑且當作備忘錄，再次感謝 https://github.com/firemakergk 大佬
