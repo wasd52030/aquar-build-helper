@@ -1,17 +1,17 @@
 # <center> aquar系统搭建指南
 
+受到 https://github.com/firemakergk/aquar-build-helper 的啟發，將這套環境架在自家，將安裝所使用的文件與紀錄持續開源，姑且當作備忘錄，再次感謝 https://github.com/firemakergk 大佬
+
 # 整体介绍
 
 Aquar系统是一套整合了多种开源组件的系统集合。Aquar本质上是跑在Proxmox VE虚拟化平台上的若干个虚拟机以及其中自动化脚本的组合。目的是通过一定的预设置以及自动化脚本，让本来相互独立的虚拟机之间互相关联，使服务器整体上更加易用。
 
-**update 2024.4：** 2023年6月，pve8更新到了稳定版本，本篇指南也针对pve8的变化进行了修正，若你在搭建时发现文档中存在问题，请在issue中提出来，我会找时间修正。
-
 ### 核心能力：
 
 - 开机显示宿主机最新IP
-- ups停电关机（支持施耐德及使用Viewpower的国产ups品牌）
+- ups停电关机（支持施耐德及使用Viewpower的ups品牌）
 - 预装TrueNas并配置好多种共享服务（NFS、SMB、WebDAV），且拥有合理开放的权限
-- 预装多种Docker服务（NextCloud、FileRun、Syncthing、Transmission、Jellyfin、Photoprism、Navidrome、AquarHome）
+- 预装多种Docker服务（Syncthing、Jellyfin、immich、Navidrome、heimdall）
 - IP地址变动场景下自动重组服务配置
 - 开机即用能力
 - aqserv命令行管理工具
@@ -138,19 +138,19 @@ PVE安装完成后，首先在你的物理机屏幕上会显示出服务的IP地
 
 ![71ae5380b5c1d90f369752231d03b96c.png](./_resources/b560cb87377441b99f65262a4b403739.png)
 
-### 安装TrueNAS core
+### 安装TrueNAS scale
 
-最近TrueNas推出了基于Linux的TrueNAS scale，对Linux生态友好了很多，这使得TrueNAS scale上可以直接搭载Docker服务。但由于Aquar使用PVE这种虚拟化平台作为底层系统，所以没有必要在TrueNAS 上搭载其他服务，所以仍然选择经受了长期考验的TrueNAS  core作为存储管理中心。
+為確保硬體兼容，採用Debian為底的TrueNAS scale
 
 **1.下载镜像**
 
-TrueNAS core的下载页面：https://www.truenas.com/download-truenas-core/
+TrueNAS scale的下载页面：https://www.truenas.com/download-truenas-community-edition/
 
 刚进入时会提示你注册，点击右下角的No Thanks即可看到下载链接了。推荐直接下载最新版本即可。
 
 **2.上传镜像到PVE**
 
-在左侧的树状图中选择pve节点的local存储，在右侧选择ISO images，然后点upload，上传你的在上一步下载的TrueNAS core ISO文件。你可以提前下载后面两节需要用到的镜像，然后集中上传，这可以节省很多时间。
+在左侧的树状图中选择pve节点的local存储，在右侧选择ISO images，然后点upload，上传你的在上一步下载的TrueNAS scale ISO文件。你可以提前下载后面两节需要用到的镜像，然后集中上传，这可以节省很多时间。
 
 ![174b77b311b7cddfff8b6232cf245026.png](./_resources/2d47a9cab43248ccbe2909f45ddb3bce.png)
 
@@ -164,7 +164,7 @@ TrueNAS core的下载页面：https://www.truenas.com/download-truenas-core/
 
 **![5aa81e9e7de891f1613dea0ddc4d52fc.png](./_resources/019d87e536184936aadc9ed164f5f036.png)**
 
-OS配置页面选择你上传的TrueNAS IOS镜像，并设置操作系统类型为Other（我不确定TrueNAS core是不是Solaris OS）
+OS配置页面选择你上传的TrueNAS IOS镜像，并设置操作系统类型为Other
 
 ![be73fde4162d0800d6a59ea1d3fcc561.png](./_resources/0a65f2004e854c92b63934b149dd35a8.png)
 
@@ -206,7 +206,7 @@ CPU分配了2核，另外CPU类型选择了host，在单机情况下这样设置
 
 ![a854d74c7a01bfc6251f4dd0224f3449.png](./_resources/b3fb53bede9346178f391a6b184df223.png)
 
-**4.安装TrueNAS core**
+**4.安装TrueNAS **
 
 TrueNAS官方文档：https://www.truenas.com/docs/core/corepreviousversion/
 
@@ -237,7 +237,7 @@ TrueNAS安装成功后应该可以在console上看到类似下面的提示，在
 
 Ubuntu Server下载页面：https://cn.ubuntu.com/download/server/step1
 
-选择最新的LTS版本即可，目前最新的LTS版本是22，我使用的是20版本。
+选择最新的LTS版本即可，目前最新的LTS版本是24，目前也使用24。
 
 **2.上传镜像**
 
