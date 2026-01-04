@@ -118,7 +118,7 @@ Aquar涉及的系统安装过程在网上有很多优秀的文章，建议配合
 
 pve的镜像官网下载页面：https://www.proxmox.com/en/downloads/category/iso-images-pve
 
-我目前使用的版本是7.1-7，建议直接下载最新版本即可。
+我目前使用的版本是9.1-1，建议直接下载最新版本即可。
 
 **2.制作启动盘**
 
