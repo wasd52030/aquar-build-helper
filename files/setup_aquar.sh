@@ -159,7 +159,7 @@ services:
       ND_BASEURL: ""
     volumes:
       - "/opt/aquar/storages/aquarpool/apps/navidrome/data:/data"
-      - "/opt/aquar/storages/aquarpool/aquarpool/music:/music:ro"
+      - "/opt/aquar/storages/aquarpool/music:/music:ro"
   rustdesk-hbbs:
     container_name: rustdesk-hbbs
     ports:
