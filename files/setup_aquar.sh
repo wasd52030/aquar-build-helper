@@ -207,7 +207,7 @@ services:
     restart: unless-stopped
   immich-server:
     container_name: immich_server
-    image: ghcr.io/immich-app/immich-server:v2
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     # extends:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
@@ -221,7 +221,6 @@ services:
       - immich-redis
       - immich-database
     environment:
-      IMMICH_VERSION: v2
       UPLOAD_LOCATION: /opt/aquar/storages/aquarpool/apps/immich/library
       TZ: Asia/Taipei
       DB_HOSTNAME: immich-database
@@ -234,7 +233,7 @@ services:
   #   container_name: immich_machine_learning
   #   # For hardware acceleration, add one of -[armnn, cuda, rocm, openvino, rknn] to the image tag.
   #   # Example tag: v2-cuda
-  #   image: ghcr.io/immich-app/immich-machine-learning:v2
+  #   image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
   #   # extends: # uncomment this section for hardware acceleration - see https://docs.immich.app/features/ml-hardware-acceleration
   #   #   file: hwaccel.ml.yml
   #   #   service: cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference - use the '-wsl' version for WSL2 where applicable
@@ -297,7 +296,7 @@ EOF
 # EOF
 
 
-echo '********设置开机自启动docker-compose********'
+echo '********設定開機啟動docker-compose********'
 cat >  /lib/systemd/system/aquar.service <<EOF
 [Unit]
 Description=Aquar service
@@ -317,7 +316,7 @@ WantedBy=multi-user.target
 EOF
 systemctl enable aquar
 
-echo '********启动docker-compose********'
+echo '********啟動docker-compose********'
 cd /opt/aquar/src/docker-compose/
 docker compose up -d
 mkdir -p /opt/aquar/storages/apps/filerun/html/system/data/temp
