@@ -113,7 +113,7 @@ networks:
     external: false
 services:
   jellyfin:
-    image: nyanmisaka/jellyfin
+    image: jellyfin/jellyfin:latest
     container_name: jellyfin
     network_mode: host
     environment:
