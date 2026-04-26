@@ -1,4 +1,3 @@
-echo '********开始修改pve源为国内源********'
 mv /etc/apt/sources.list.d/pve-enterprise.list /etc/apt/sources.list.d/pve-enterprise.list.bak
 mv /etc/apt/sources.list.d/ceph.list /etc/apt/sources.list.d/ceph.list.bak
 
@@ -7,11 +6,11 @@ then
     cp /etc/apt/sources.list /etc/apt/sources.list.bak
     cat > /etc/apt/sources.list <<EOF
 ##[aquar config start]##
-deb https://mirrors.ustc.edu.cn/debian/ bookworm main contrib non-free
-deb https://mirrors.ustc.edu.cn/debian/ bookworm-updates main contrib non-free
-deb https://mirrors.ustc.edu.cn/debian/ bookworm-backports main contrib non-free
-deb https://mirrors.ustc.edu.cn/debian-security bookworm-security main contrib 
-deb https://mirrors.ustc.edu.cn/proxmox/debian bookworm pve-no-subscription
+deb http://ftp.tw.debian.org/debian/ bookworm main contrib non-free
+deb http://ftp.tw.debian.org/debian/ bookworm-updates main contrib non-free
+deb http://ftp.tw.debian.org/debian/ bookworm-backports main contrib non-free
+deb http://security.debian.org/debian-security bookworm-security main contrib 
+deb https://download.proxmox.com/debian/pve bookworm pve-no-subscription
 ##[aquar config end]##
 EOF
 else
@@ -39,12 +38,12 @@ iface vmbr1 inet static
         bridge-fd 0
 EOF
 else
-    echo '********探测到已配置成功，跳过/etc/network/interfaces的配置********'
+    echo '********探測到已配置成功，跳過/etc/network/interfaces的配置********'
 fi
 
-echo '*******安装ipupdater.py脚本********'
+echo '*******安装ipupdater.py script********'
 # sed '/(^10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}.+$)|(^172\.1[6-9]\.[0-9]{1,3}\.[0-9]{1,3}.+$)|(^172\.2[0-9]\.[0-9]{1,3}\.[0-9]{1,3}.+$)|(^172\.3[0-1]\.[0-9]{1,3}\.[0-9]{1,3}.+$)|(^192\.168\.[0-9]{1,3}\.[0-9]{1,3}.+$)/s/static/dhcp/g' /etc/hosts
-## 扫描hosts中的内容，取出带有私有地址的那一行，找到后面跟的host名称，赋值到变量，然后带入到下面的脚本中
+## 掃描hosts中的内容，取出帶有私有地址的那一行，找到後面跟的host，assin到pve_host，方便下面的script使用
 pve_host=$(awk '{print $1}' /etc/hostname)
 
 cat > /root/ipupdater.py <<EOF
