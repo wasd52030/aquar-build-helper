@@ -1,0 +1,80 @@
+pageInfo:
+  title: Dashy
+  description: Homelab
+  navLinks:
+    - title: Home
+      path: /
+  footerText: "Dashy"
+
+appConfig:
+  theme: nord-frost
+  layout: auto
+  iconSize: medium
+  language: zh-TW
+
+sections:
+  - name: Media
+    icon: fas fa-photo-video
+    items:
+      - title: Jellyfin
+        description: Media Server
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/jellyfin.png
+        url: http://192.168.0.196:8096/
+        statusCheck: true
+
+      # - title: Navidrome
+      #   description: Music Server
+      #   icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/navidrome.png
+      #   url: http://192.168.0.196:4533
+      #   statusCheck: true
+
+      - title: Immich
+        description: Photo Backup
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/immich.png
+        url: http://192.168.0.196:2283
+        statusCheck: true
+
+  - name: Downloads
+    icon: fas fa-download
+    items:
+      - title: qBittorrent
+        description: Torrent Client
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/qbittorrent.png
+        url: http://192.168.0.196:8082
+        statusCheck: true
+
+  # - name: Sync
+  #   icon: fas fa-sync-alt
+  #   items:
+  #     - title: Syncthing
+  #       description: File Synchronization
+  #       icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/syncthing.png
+  #       url: http://192.168.0.196:8384
+  #       statusCheck: true
+
+  - name: System / Infra
+    icon: fas fa-server
+    items:
+      - title: Proxmox
+        description: Virtualization Platform
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/proxmox.png
+        url: http://192.168.0.114:8006
+        # statusCheck: true
+
+      - title: TrueNAS
+        description: Storage / NAS System
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/truenas.png
+        url: http://192.168.0.130
+        # statusCheck: true
+
+      # - title: Uptime Kuma
+      #   description: Service Monitoring
+      #   icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/uptime-kuma.png
+      #   url: http://192.168.0.118:3001
+      #   statusCheck: true
+      
+      # - title: Dashy
+      #   description: Dashboard
+      #   icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/dashy.png
+      #   url: http://192.168.0.196
+      #   statusCheck: true
