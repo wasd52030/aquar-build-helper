@@ -104,6 +104,10 @@ apt-mark hold containerd.io
 # mkdir -p /opt/aquar/storages/apps/immich/library
 # mkdir -p /opt/aquar/storages/apps/immich/postgres
 
+# dashy config init
+mkdir -p /opt/aquar/storages/aquarpool/apps/dashy/config
+touch /opt/aquar/storages/aquarpool/apps/dashy/config/config.yml
+
 echo '********配置docker-compose********'
 mkdir -p /opt/aquar/src/docker-compose/
 touch /opt/aquar/src/docker-compose/docker-compose.yml
@@ -127,39 +131,39 @@ services:
     privileged: true
     devices:
       - /dev/dri:/dev/dri
-  syncthing:
-    image: ghcr.io/linuxserver/syncthing
-    container_name: syncthing
-    # hostname: syncthing #optional
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ="Asia/Taipei"
-    volumes:
-      - /opt/aquar/storages/aquarpool/apps/syncthing/config:/config
-      - /opt/aquar/storages/aquarpool/aquarpool:/opt/aquarpool
-      # - /path/to/data1:/data1
-    ports:
-      - 8384:8384
-      - 22000:22000
-      - 21027:21027/udp
-    restart: unless-stopped
-  navidrome:
-    image: deluan/navidrome:latest
-    container_name: navidrome
-    user: 0:0 
-    ports:
-      - "4533:4533"
-    restart: unless-stopped
-    environment:
-      # Optional: put your config options customization here. Examples:
-      ND_SCANSCHEDULE: 1h
-      ND_LOGLEVEL: error  
-      ND_SESSIONTIMEOUT: 72h
-      ND_BASEURL: ""
-    volumes:
-      - "/opt/aquar/storages/aquarpool/apps/navidrome/data:/data"
-      - "/opt/aquar/storages/aquarpool/music:/music:ro"
+  # syncthing:
+  #   image: ghcr.io/linuxserver/syncthing
+  #   container_name: syncthing
+  #   # hostname: syncthing #optional
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ="Asia/Taipei"
+  #   volumes:
+  #     - /opt/aquar/storages/aquarpool/apps/syncthing/config:/config
+  #     - /opt/aquar/storages/aquarpool/aquarpool:/opt/aquarpool
+  #     # - /path/to/data1:/data1
+  #   ports:
+  #     - 8384:8384
+  #     - 22000:22000
+  #     - 21027:21027/udp
+  #   restart: unless-stopped
+  # navidrome:
+  #   image: deluan/navidrome:latest
+  #   container_name: navidrome
+  #   user: 0:0 
+  #   ports:
+  #     - "4533:4533"
+  #   restart: unless-stopped
+  #   environment:
+  #     # Optional: put your config options customization here. Examples:
+  #     ND_SCANSCHEDULE: 1h
+  #     ND_LOGLEVEL: error  
+  #     ND_SESSIONTIMEOUT: 72h
+  #     ND_BASEURL: ""
+  #   volumes:
+  #     - "/opt/aquar/storages/aquarpool/apps/navidrome/data:/data"
+  #     - "/opt/aquar/storages/aquarpool/music:/music:ro"
   rustdesk-hbbs:
     container_name: rustdesk-hbbs
     ports:
@@ -267,20 +271,48 @@ services:
       - /opt/aquar/storages/aquarpool/apps/immich/postgres:/var/lib/postgresql/data
     shm_size: 128mb
     restart: unless-stopped
-  heimdall:
-    image: lscr.io/linuxserver/heimdall:latest
-    container_name: heimdall
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Asia/Taipei
-      - ALLOW_INTERNAL_REQUESTS=false #optional
+  # heimdall:
+  #   image: lscr.io/linuxserver/heimdall:latest
+  #   container_name: heimdall
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ=Asia/Taipei
+  #     - ALLOW_INTERNAL_REQUESTS=false #optional
+  #   volumes:
+  #     - /opt/aquar/storages/aquarpool/apps/heimdall/config:/config
+  #   ports:
+  #     - 80:80
+  #     - 443:443
+  #   restart: unless-stopped
+  dashy:
+    # To build from source, replace 'image: lissy93/dashy' with 'build: .'
+    # build: .
+    image: lissy93/dashy
+    container_name: Dashy
+    # Pass in your config file below, by specifying the path on your host machine
+    # volumes:
+      # - /root/my-config.yml:/app/user-data/conf.yml
     volumes:
-      - /opt/aquar/storages/aquarpool/apps/heimdall/config:/config
+      - /opt/aquar/storages/aquarpool/apps/dashy/config/dashy_config.yml:/app/user-data/conf.yml
     ports:
-      - 80:80
+      - 80:8080
       - 443:443
+    # Set any environmental variables
+    environment:
+      - NODE_ENV=production
+    # Specify your user ID and group ID. You can find this by running `id -u` and `id -g`
+      - UID=1000
+      - GID=1000
+    # Specify restart policy
     restart: unless-stopped
+    # Configure healthchecks
+    healthcheck:
+      test: ['CMD', 'node', '/app/services/healthcheck']
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 EOF
 # mkdir -p /opt/aquar/src/docker-compose/mariadb.init.d
 # touch /opt/aquar/src/docker-compose/mariadb.init.d/init.sql
