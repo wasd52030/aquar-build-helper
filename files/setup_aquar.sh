@@ -108,6 +108,9 @@ apt-mark hold containerd.io
 mkdir -p /opt/aquar/storages/aquarpool/apps/dashy/config
 touch /opt/aquar/storages/aquarpool/apps/dashy/config/config.yml
 
+# stirling_pdf init
+mkdir -p /opt/aquar/storages/aquarpool/apps/stirling_pdf
+
 echo '********配置docker-compose********'
 mkdir -p /opt/aquar/src/docker-compose/
 touch /opt/aquar/src/docker-compose/docker-compose.yml
@@ -122,15 +125,15 @@ services:
     network_mode: host
     environment:
       - TZ=Asia/Taipei
-        # - JELLYFIN_PublishedServerUrl="http://192.168.0.118:8096" #optional
+      # - JELLYFIN_PublishedServerUrl="http://192.168.0.118:8096" #optional
     volumes:
       - /opt/aquar/storages/aquarpool/apps/jellyfin/config:/config
       - /opt/aquar/storages/aquarpool/apps/jellyfin/cache:/cache
       - /opt/aquar/storages/aquarpool/movies:/media
-    restart: unless-stopped
-    privileged: true
     devices:
       - /dev/dri:/dev/dri
+    restart: unless-stopped
+    privileged: true
   # syncthing:
   #   image: ghcr.io/linuxserver/syncthing
   #   container_name: syncthing
@@ -230,8 +233,6 @@ services:
       DB_HOSTNAME: immich-database
       REDIS_HOSTNAME: immich-redis
     restart: unless-stopped
-    healthcheck:
-      disable: false
   # 只有內顯，保留作為debug接螢幕使用，待哪天有錢加獨顯再說
   # immich-machine-learning:
   #   container_name: immich_machine_learning
@@ -242,7 +243,7 @@ services:
   #   #   file: hwaccel.ml.yml
   #   #   service: cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference - use the '-wsl' version for WSL2 where applicable
   #   volumes:
-  #     - /opt/aquar/storages/apps/immich/immich_machinelearning/model-cache:/cache
+  #     - /opt/aquar/storages/aquarpool/apps/immich/immich_machinelearning/model-cache:/cache
   #   environment:
   #     IMMICH_VERSION: v2
   #     TZ: Asia/Taipei
@@ -271,6 +272,21 @@ services:
       - /opt/aquar/storages/aquarpool/apps/immich/postgres:/var/lib/postgresql/data
     shm_size: 128mb
     restart: unless-stopped
+  stirling-pdf:
+    image: stirlingtools/stirling-pdf:latest
+    ports:
+      - '8080:8080' # 冒號左邊是對外暴露的通訊埠
+    volumes:
+      - /opt/aquar/storages/aquarpool/apps/stirling_pdf/training_data:/usr/share/tessdata # OCR language files
+      - /opt/aquar/storages/aquarpool/apps/stirling_pdf/configs:/configs # Settings & database
+      - /opt/aquar/storages/aquarpool/apps/stirling_pdf/logs:/logs                     # Application logs
+      - /opt/aquar/storages/aquarpool/apps/stirling_pdf/pipeline:/pipeline             # Automation configs
+    environment:
+      - DOCKER_ENABLE_SECURITY=false
+      - INSTALL_BOOK_AND_ADVANCED_HTML_OPS=true # 安裝全部功能
+      - LANGS=zh_TW # 界面語言
+      - JAVA_CUSTOM_OPTS=-Dmanagement.endpoints.web.exposure.include=prometheus,health,info -Dmanagement.endpoint.health.show-details=always -Dmanagement.metrics.export.prometheus.enabled=true -Denterprisemanagement.metrics.enabled=true
+    restart: unless-stopped
   # heimdall:
   #   image: lscr.io/linuxserver/heimdall:latest
   #   container_name: heimdall
@@ -285,6 +301,17 @@ services:
   #     - 80:80
   #     - 443:443
   #   restart: unless-stopped
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce:latest
+    ports:
+      - 8000:8000
+      - 9443:9443
+      - 9000:9000
+    volumes:
+      - /opt/aquar/storages/aquarpool/apps/portainer/data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
   dashy:
     # To build from source, replace 'image: lissy93/dashy' with 'build: .'
     # build: .
@@ -297,7 +324,6 @@ services:
       - /opt/aquar/storages/aquarpool/apps/dashy/config/dashy_config.yml:/app/user-data/conf.yml
     ports:
       - 80:8080
-      - 443:443
     # Set any environmental variables
     environment:
       - NODE_ENV=production

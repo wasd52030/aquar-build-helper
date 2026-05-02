@@ -7,10 +7,10 @@ pageInfo:
   footerText: "Dashy"
 
 appConfig:
-  theme: nord-frost
   layout: auto
   iconSize: medium
   language: zh-TW
+
 
 sections:
   - name: Media
@@ -20,20 +20,17 @@ sections:
         description: Media Server
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/jellyfin.png
         url: http://192.168.0.196:8096/
-        statusCheck: true
-
+        
       # - title: Navidrome
       #   description: Music Server
       #   icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/navidrome.png
       #   url: http://192.168.0.196:4533
-      #   statusCheck: true
-
+      
       - title: Immich
         description: Photo Backup
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/immich.png
         url: http://192.168.0.196:2283
-        statusCheck: true
-
+        
   - name: Downloads
     icon: fas fa-download
     items:
@@ -41,8 +38,7 @@ sections:
         description: Torrent Client
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/qbittorrent.png
         url: http://192.168.0.196:8082
-        statusCheck: true
-
+        
   # - name: Sync
   #   icon: fas fa-sync-alt
   #   items:
@@ -50,8 +46,7 @@ sections:
   #       description: File Synchronization
   #       icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/syncthing.png
   #       url: http://192.168.0.196:8384
-  #       statusCheck: true
-
+  
   - name: System / Infra
     icon: fas fa-server
     items:
@@ -59,22 +54,32 @@ sections:
         description: Virtualization Platform
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/proxmox.png
         url: http://192.168.0.114:8006
-        # statusCheck: true
+
 
       - title: TrueNAS
         description: Storage / NAS System
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/truenas.png
         url: http://192.168.0.130
-        # statusCheck: true
+
+      - title: Portainer
+        description: Docker 管理介面
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/portainer.png
+        url: https://192.168.0.196:9443
 
       # - title: Uptime Kuma
       #   description: Service Monitoring
       #   icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/uptime-kuma.png
       #   url: http://192.168.0.118:3001
-      #   statusCheck: true
       
       # - title: Dashy
       #   description: Dashboard
       #   icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/dashy.png
       #   url: http://192.168.0.196
-      #   statusCheck: true
+  
+  - name: Tools
+    icon: fas fa-tools
+    items:
+      - title: Stirling PDF
+        description: PDF Tools Suite
+        icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/stirling-pdf.png
+        url: http://192.168.0.196:8080
