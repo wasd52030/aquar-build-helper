@@ -119,6 +119,30 @@ networks:
   rustdesk-net:
     external: false
 services:
+  # reference -> https://gist.github.com/dragonfire1119/ee8c1bc6f0707d8ee0b30afb98efc7eb
+  adguardhome:  # Define the service named 'adguardhome'
+    image: adguard/adguardhome  # Use the 'adguard/adguardhome' Docker image
+    container_name: adguardhome  # Set the container name to 'adguardhome'
+    restart: unless-stopped  # Restart the container automatically unless stopped manually
+    ports:  # Map container ports to host ports
+      # Expose port 53 on TCP and UDP for DNS queries
+      - "53:53/tcp"
+      - "53:53/udp"
+
+      # Expose port 8964 on TCP for HTTP web interface
+      - "8964:8964/tcp"
+
+      # Expose port 443 on TCP and UDP for HTTPS web interface
+      #- "443:443/tcp"
+      #- "443:443/udp"
+
+      # Expose port 3000 on TCP for AdGuard Home's API
+      - "3000:3000/tcp"
+    environment:
+      - TZ=Asia/Taipei
+    volumes:  # Mount host directories as volumes inside the container
+      - /opt/aquar/storages/aquarpool/apps/adguard-home/work:/opt/adguardhome/work
+      - /opt/aquar/storages/aquarpool/apps/adguard-home/conf:/opt/adguardhome/conf 
   jellyfin:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin

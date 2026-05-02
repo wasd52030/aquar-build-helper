@@ -66,6 +66,11 @@ sections:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/portainer.png
         url: https://192.168.0.196:9443
 
+      - title: AdGuard Home
+        description: DNS 廣告過濾 / 網路保護
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/adguard-home.png
+        url: http://192.168.0.196:8964
+
       # - title: Uptime Kuma
       #   description: Service Monitoring
       #   icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/uptime-kuma.png
