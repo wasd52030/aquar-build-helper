@@ -137,6 +137,7 @@ echo '********配置docker-compose********'
 mkdir -p /opt/aquar/src/docker-compose/
 touch /opt/aquar/src/docker-compose/docker-compose.yml
 cat > /opt/aquar/src/docker-compose/docker-compose.yml <<EOF
+# 目前配置網頁服務皆須連上tailscale才可使用
 networks:
   core:
     name: core
