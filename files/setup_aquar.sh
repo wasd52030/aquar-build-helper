@@ -507,9 +507,6 @@ services:
       - /opt/aquar/storages/aquarpool/apps/dashy/config/dashy_config.yml:/app/user-data/conf.yml
     #ports:
       #- 8086:8080
-    # Set any environmental variables
-    environment:
-      - NODE_ENV=production
     labels:
       - traefik.enable=true
 
