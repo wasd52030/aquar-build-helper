@@ -111,11 +111,42 @@ touch /opt/aquar/storages/aquarpool/apps/dashy/config/config.yml
 # stirling_pdf init
 mkdir -p /opt/aquar/storages/aquarpool/apps/stirling_pdf
 
+# traefik init
+mkdir -p /opt/aquar/storages/aquarpool/apps/traefik
+mkdir -p /opt/aquar/storages/aquarpool/apps/traefik/letsencrypt
+touch /opt/aquar/storages/aquarpool/apps/traefik/letsencrypt/acme.json
+chmod 600 /opt/aquar/storages/aquarpool/apps/traefik/letsencrypt/acme.json
+
+mkdir -p /opt/aquar/storages/aquarpool/apps/traefik/dynamic
+cat > /opt/aquar/storages/aquarpool/apps/traefik/dynamic/middlewares.yml <<EOF
+http:
+  middlewares:
+    security:
+      headers:
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        stsPreload: true
+        forceSTSHeader: true
+        frameDeny: true
+        contentTypeNosniff: true
+        #browserXssFilter: true
+EOF
+
+
 echo '********配置docker-compose********'
 mkdir -p /opt/aquar/src/docker-compose/
 touch /opt/aquar/src/docker-compose/docker-compose.yml
 cat > /opt/aquar/src/docker-compose/docker-compose.yml <<EOF
 networks:
+  core:
+    name: core
+    internal: true
+  app:
+    name: app
+    driver: bridge
+  proxy:
+    name: proxy
+    driver: bridge
   rustdesk-net:
     external: false
 services:
@@ -124,32 +155,99 @@ services:
     image: adguard/adguardhome  # Use the 'adguard/adguardhome' Docker image
     container_name: adguardhome  # Set the container name to 'adguardhome'
     restart: unless-stopped  # Restart the container automatically unless stopped manually
-    ports:  # Map container ports to host ports
-      # Expose port 53 on TCP and UDP for DNS queries
-      - "53:53/tcp"
-      - "53:53/udp"
+    network_mode: host
+    # ports:  # Map container ports to host ports
+    #   # Expose port 53 on TCP and UDP for DNS queries
+    #   - "53:53/tcp"
+    #   - "53:53/udp"
 
-      # Expose port 8964 on TCP for HTTP web interface
-      - "8964:8964/tcp"
+    #   # Expose port 8964 on TCP for HTTP web interface
+    #   - "8964:8964/tcp"
 
-      # Expose port 443 on TCP and UDP for HTTPS web interface
-      #- "443:443/tcp"
-      #- "443:443/udp"
+    #   # Expose port 443 on TCP and UDP for HTTPS web interface
+    #   #- "443:443/tcp"
+    #   #- "443:443/udp"
 
-      # Expose port 3000 on TCP for AdGuard Home's API
-      - "3000:3000/tcp"
+    #   # Expose port 3000 on TCP for AdGuard Home's API
+    #   - "3000:3000/tcp"
     environment:
       - TZ=Asia/Taipei
     volumes:  # Mount host directories as volumes inside the container
       - /opt/aquar/storages/aquarpool/apps/adguard-home/work:/opt/adguardhome/work
-      - /opt/aquar/storages/aquarpool/apps/adguard-home/conf:/opt/adguardhome/conf 
+      - /opt/aquar/storages/aquarpool/apps/adguard-home/conf:/opt/adguardhome/conf
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: tailscale
+    hostname: tailscale
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - /opt/aquar/storages/aquarpool/apps/tailscale/state:/var/lib/tailscale
+    environment:
+      - TS_AUTHKEY=123456
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_EXTRA_ARGS=--advertise-routes=192.168.0.0/24
+    restart: unless-stopped
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    command:
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --log.level=DEBUG
+      - --providers.docker.network=proxy
+
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.web.http.redirections.entryPoint.to=websecure
+      - --entrypoints.web.http.redirections.entryPoint.scheme=https
+      
+      - --certificatesresolvers.resolverX.acme.dnschallenge=true
+      - --certificatesresolvers.resolverX.acme.dnschallenge.provider=cloudflare
+      - --certificatesresolvers.resolverX.acme.email=C109152304@nkust.edu.com
+      - --certificatesresolvers.resolverX.acme.storage=/letsencrypt/acme.json
+    ports:
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
+      - "0.0.0.0:8080:8080"
+    environment:
+      - CF_DNS_API_TOKEN=654321
+    networks:
+      - app
+      - proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/aquar/storages/aquarpool/apps/traefik/letsencrypt:/letsencrypt
+    restart: unless-stopped
   jellyfin:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin
-    network_mode: host
+    networks:
+      - app
+      - proxy
+    # ports:
+      # - "8096:8096"
+    labels:
+      - traefik.enable=true
+
+      - traefik.http.routers.jellyfin.rule=Host(`jellyfin.haiyaa-sobel.cc`)
+      - traefik.http.routers.jellyfin.entrypoints=websecure
+
+      - traefik.http.routers.jellyfin.tls=true # 啟用 TLS
+      - traefik.http.routers.jellyfin.tls.certresolver=resolverX
+
+      - traefik.http.routers.jellyfin.service=jellyfin
+      - traefik.docker.network=proxy
+
+      - traefik.http.services.jellyfin.loadbalancer.server.port=8096
     environment:
       - TZ=Asia/Taipei
-      # - JELLYFIN_PublishedServerUrl="http://192.168.0.118:8096" #optional
+      #- JELLYFIN_PublishedServerUrl="http://192.168.0.118:8096" #optional
     volumes:
       - /opt/aquar/storages/aquarpool/apps/jellyfin/config:/config
       - /opt/aquar/storages/aquarpool/apps/jellyfin/cache:/cache
@@ -157,7 +255,6 @@ services:
     devices:
       - /dev/dri:/dev/dri
     restart: unless-stopped
-    privileged: true
   # syncthing:
   #   image: ghcr.io/linuxserver/syncthing
   #   container_name: syncthing
@@ -222,6 +319,24 @@ services:
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
+    networks:
+      - app
+      - proxy
+    #ports:
+      #- "8082:8082"
+    labels:
+      - traefik.enable=true
+
+      - traefik.http.routers.qbittorrent.rule=Host(`qb.haiyaa-sobel.cc`)
+      - traefik.http.routers.qbittorrent.entrypoints=websecure
+      
+      - traefik.http.routers.qbittorrent.tls=true # 啟用 TLS
+      - traefik.http.routers.qbittorrent.tls.certresolver=resolverX
+
+      - traefik.http.routers.qbittorrent.service=qbittorrent
+      - traefik.docker.network=proxy
+
+      - traefik.http.services.qbittorrent.loadbalancer.server.port=8082
     environment:
       - PUID=1000
       - PGID=1000
@@ -231,10 +346,10 @@ services:
       - /opt/aquar/storages/aquarpool/apps/qbittorrent/config:/config
       - /opt/aquar/storages/aquarpool/qbdownloads:/downloads
       # - /opt/vc/lib:/opt/vc/lib #optional
-    ports:
-      - 8082:8082
-      - 6881:6881
-      - 6881:6881/udp
+    #ports:
+      #- 8082:8082
+      #- 6881:6881
+      #- 6881:6881/udp
     restart: unless-stopped
   immich-server:
     container_name: immich_server
@@ -242,12 +357,29 @@ services:
     # extends:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
+    networks:
+      - core
+      - app
+      - proxy
+    #ports:
+      #- "2283:2283"
+    labels:
+      - traefik.enable=true
+
+      - traefik.http.routers.immich.rule=Host(`photo.haiyaa-sobel.cc`)
+      - traefik.http.routers.immich.entrypoints=websecure
+
+      - traefik.http.routers.immich.tls=true # 啟用 TLS
+      - traefik.http.routers.immich.tls.certresolver=resolverX
+
+      - traefik.http.routers.immich.service=immich
+      - traefik.docker.network=proxy
+
+      - traefik.http.services.immich.loadbalancer.server.port=2283
     volumes:
       # Do not edit the next line. If you want to change the media storage location on your system, edit the value of UPLOAD_LOCATION in the .env file
       - /opt/aquar/storages/aquarpool/apps/immich/library:/data
       - /etc/localtime:/etc/localtime:ro
-    ports:
-      - '2283:2283'
     depends_on:
       - immich-redis
       - immich-database
@@ -277,6 +409,8 @@ services:
   immich-redis:
     container_name: immich_redis
     image: docker.io/valkey/valkey:9@sha256:fb8d272e529ea567b9bf1302245796f21a2672b8368ca3fcb938ac334e613c8f
+    networks:
+      - core
     environment:
       TZ: Asia/Taipei
     healthcheck:
@@ -285,6 +419,8 @@ services:
   immich-database:
     container_name: immich_postgres
     image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    networks:
+      - core
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -298,8 +434,24 @@ services:
     restart: unless-stopped
   stirling-pdf:
     image: stirlingtools/stirling-pdf:latest
-    ports:
-      - '8080:8080' # 冒號左邊是對外暴露的通訊埠
+    networks:
+      - app
+      - proxy
+    #ports:
+      #- '8087:8080'
+    labels:
+      - traefik.enable=true
+
+      - traefik.http.routers.stirling-pdf.rule=Host(`pdf.haiyaa-sobel.cc`)
+      - traefik.http.routers.stirling-pdf.entrypoints=websecure
+
+      - traefik.http.routers.stirling-pdf.tls=true # 啟用 TLS
+      - traefik.http.routers.stirling-pdf.tls.certresolver=resolverX
+
+      - traefik.http.routers.stirling-pdf.service=stirling-pdf
+      - traefik.docker.network=proxy
+
+      - traefik.http.services.stirling-pdf.loadbalancer.server.port=8080    
     volumes:
       - /opt/aquar/storages/aquarpool/apps/stirling_pdf/training_data:/usr/share/tessdata # OCR language files
       - /opt/aquar/storages/aquarpool/apps/stirling_pdf/configs:/configs # Settings & database
@@ -328,6 +480,9 @@ services:
   portainer:
     container_name: portainer
     image: portainer/portainer-ce:latest
+    networks:
+      - app
+      - proxy
     ports:
       - 8000:8000
       - 9443:9443
@@ -341,16 +496,32 @@ services:
     # build: .
     image: lissy93/dashy
     container_name: Dashy
+    networks:
+      - app
+      - proxy
     # Pass in your config file below, by specifying the path on your host machine
     # volumes:
       # - /root/my-config.yml:/app/user-data/conf.yml
     volumes:
       - /opt/aquar/storages/aquarpool/apps/dashy/config/dashy_config.yml:/app/user-data/conf.yml
-    ports:
-      - 80:8080
+    #ports:
+      #- 8086:8080
     # Set any environmental variables
     environment:
       - NODE_ENV=production
+    labels:
+      - traefik.enable=true
+
+      - traefik.http.routers.dashy.rule=Host(`haiyaa-sobel.cc`)
+      - traefik.http.routers.dashy.entrypoints=websecure
+
+      - traefik.http.routers.dashy.tls=true # 啟用 TLS
+      - traefik.http.routers.dashy.tls.certresolver=resolverX
+
+      - traefik.http.routers.dashy.service=dashy
+      - traefik.docker.network=proxy
+
+      - traefik.http.services.dashy.loadbalancer.server.port=8080
     # Specify your user ID and group ID. You can find this by running `id -u` and `id -g`
       - UID=1000
       - GID=1000
