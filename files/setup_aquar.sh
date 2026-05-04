@@ -522,6 +522,8 @@ services:
       - traefik.docker.network=proxy
 
       - traefik.http.services.dashy.loadbalancer.server.port=8080
+    environment:
+      - NODE_ENV=production
     # Specify your user ID and group ID. You can find this by running `id -u` and `id -g`
       - UID=1000
       - GID=1000
