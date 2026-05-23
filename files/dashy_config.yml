@@ -19,7 +19,7 @@ sections:
       - title: Jellyfin
         description: Media Server
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/jellyfin.png
-        url: http://192.168.0.196:8096/
+        url: https://jellyfin.haiyaa-sobel.cc/
         
       # - title: Navidrome
       #   description: Music Server
@@ -29,7 +29,7 @@ sections:
       - title: Immich
         description: Photo Backup
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/immich.png
-        url: http://192.168.0.196:2283
+        url: https://photo.haiyaa-sobel.cc
         
   - name: Downloads
     icon: fas fa-download
@@ -37,7 +37,7 @@ sections:
       - title: qBittorrent
         description: Torrent Client
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/qbittorrent.png
-        url: http://192.168.0.196:8082
+        url: https://qb.haiyaa-sobel.cc
         
   # - name: Sync
   #   icon: fas fa-sync-alt
@@ -55,7 +55,6 @@ sections:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/proxmox.png
         url: http://192.168.0.114:8006
 
-
       - title: TrueNAS
         description: Storage / NAS System
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/truenas.png
@@ -70,6 +69,11 @@ sections:
         description: DNS 廣告過濾 / 網路保護
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/adguard-home.png
         url: http://192.168.0.196:8964
+        
+      - title: vnstat
+        description: DNS 廣告過濾 / 網路保護
+        icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/vn-stat.svg
+        url: http://192.168.0.196:8685
 
       # - title: Uptime Kuma
       #   description: Service Monitoring
@@ -87,4 +91,4 @@ sections:
       - title: Stirling PDF
         description: PDF Tools Suite
         icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/stirling-pdf.png
-        url: http://192.168.0.196:8080
+        url: https://pdf.haiyaa-sobel.cc
