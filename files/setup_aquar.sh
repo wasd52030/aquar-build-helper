@@ -151,6 +151,19 @@ networks:
   rustdesk-net:
     external: false
 services:
+  # reference -> https://laosu.tech/2023/07/26/%E7%BD%91%E7%BB%9C%E6%B5%81%E9%87%8F%E7%9B%91%E8%A7%86%E5%99%A8vnStat/#%E5%AE%89%E8%A3%85
+  vnstat:
+    image: vergoh/vnstat
+    container_name: vnstat
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - HTTP_PORT=8685
+      - TZ=Asia/Taipei
+      - EXCLUDE_PATTERN=^docker
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro  
   # reference -> https://gist.github.com/dragonfire1119/ee8c1bc6f0707d8ee0b30afb98efc7eb
   adguardhome:  # Define the service named 'adguardhome'
     image: adguard/adguardhome  # Use the 'adguard/adguardhome' Docker image
