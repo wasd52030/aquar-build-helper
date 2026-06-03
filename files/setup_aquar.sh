@@ -218,7 +218,7 @@ services:
       - "0.0.0.0:443:443"
       - "0.0.0.0:8080:8080"
     environment:
-      - CF_DNS_API_TOKEN=1919810
+      - CF_DNS_API_TOKEN=191981064
     networks:
       - app
       - proxy
