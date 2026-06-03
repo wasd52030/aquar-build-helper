@@ -71,9 +71,14 @@ sections:
         url: http://192.168.0.196:8964
         
       - title: vnstat
-        description: DNS 廣告過濾 / 網路保護
+        description: 流量統計
         icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/vn-stat.svg
         url: http://192.168.0.196:8685
+
+      - title: Home Assistant
+        description: 智慧家庭自動化中心
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/home-assistant.png
+        url: http://homeassistant.local:8123
 
       # - title: Uptime Kuma
       #   description: Service Monitoring
