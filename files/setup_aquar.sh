@@ -189,7 +189,7 @@ services:
     volumes:
       - /opt/aquar/storages/aquarpool/apps/tailscale/state:/var/lib/tailscale
     environment:
-      - TS_AUTHKEY=1145164
+      - TS_AUTHKEY=114514
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_EXTRA_ARGS=--advertise-routes=192.168.0.0/24
     restart: unless-stopped
