@@ -189,7 +189,7 @@ services:
     volumes:
       - /opt/aquar/storages/aquarpool/apps/tailscale/state:/var/lib/tailscale
     environment:
-      - TS_AUTHKEY=114123
+      - TS_AUTHKEY=114514
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_EXTRA_ARGS=--advertise-routes=192.168.0.0/24
     restart: unless-stopped
@@ -218,7 +218,7 @@ services:
       - "0.0.0.0:443:443"
       - "0.0.0.0:8080:8080"
     environment:
-      - CF_DNS_API_TOKEN=514
+      - CF_DNS_API_TOKEN=1919810
     networks:
       - app
       - proxy
