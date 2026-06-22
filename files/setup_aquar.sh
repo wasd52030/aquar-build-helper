@@ -26,7 +26,7 @@ $nfspath:/mnt/pool0/main_drive/sobel/aquarpool /opt/aquar/storages/aquarpool nfs
 ##[aquar config end]##
 EOF
 else
-    echo '********探測到已配置成功，跳過/etc/fstab的配置********'
+    echo '********檢測到已配置成功，跳過/etc/fstab的配置********'
 fi
 
 echo '********安裝python3及venv********'
@@ -74,19 +74,36 @@ EOF
 chmod +x /usr/local/bin/aqserv
 
 echo '********安裝docker********'
-# Add Docker's official GPG key:
-sudo apt update
+# 1. 確保先解除先前的錯誤鎖定
+sudo apt-mark unhold containerd.io 2>/dev/null || true
+
+# 2. 下載正確的 GPG 金鑰（改用標準相容的 .gpg 格式）
 sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo tee /etc/apt/keyrings/docker.asc > /dev/null
-sudo chmod a+r /etc/apt/keyrings/docker.asc
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg --yes
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
+# 3. 寫入軟體源清單（明確指定使用新下載的 docker.gpg 驗證）
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu noble stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
+# 4. 更新並安裝最新、最穩定的完整 Docker 全家桶（不再搞特殊版本鎖定）
 sudo apt update
-sudo apt install -y containerd.io=1.7.29-1~ubuntu.24.04~noble docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin
-# 鎖住containerd版本
-apt-mark hold containerd.io
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# 5. 移除去除舊的、壞掉的軟體源檔案以免干擾
+sudo rm -f /etc/apt/keyrings/docker.asc
+# # Add Docker's official GPG key:
+# sudo apt update
+# sudo install -m 0755 -d /etc/apt/keyrings
+# curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo tee /etc/apt/keyrings/docker.asc > /dev/null
+# sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+
+# echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# sudo apt update
+# sudo apt install -y containerd.io=1.7.29-1~ubuntu.24.04~noble docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin
+# # 鎖住containerd版本
+# apt-mark hold containerd.io
 # echo '********創建python環境aquar並安裝docker-compose********'
 # source /root/.bashrc
 # source /usr/local/bin/virtualenvwrapper.sh
@@ -492,7 +509,7 @@ services:
     volumes:
       - /opt/aquar/storages/aquarpool/apps/portainer/data:/data
       - /var/run/docker.sock:/var/run/docker.sock
-    restart: always
+    restart: unless-stopped
   dashy:
     # To build from source, replace 'image: lissy93/dashy' with 'build: .'
     # build: .
@@ -561,6 +578,7 @@ Requires=docker.service
 Type=simple
 User=root
 Group=root
+ExecStartPre=/bin/sleep 60
 TimeoutStartSec=0
 ExecStart=/usr/local/bin/aqserv start
 SyslogIdentifier=aqserv

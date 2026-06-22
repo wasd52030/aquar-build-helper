@@ -13,10 +13,8 @@ function Flash-Token {
         # 讀取檔案內容
         $Content = Get-Content $FilePath -Raw -Encoding utf8
 
-        # 3. 使用正則表達式替換設定值
-        # (?<=...) 是正向後行斷言，意思是只匹配「TS_AUTHKEY=」後面的內容
-        $Content = $Content -replace '(?<=TS_AUTHKEY=).*', '114514'
-        $Content = $Content -replace '(?<=CF_DNS_API_TOKEN=).*', '1919810'
+        $Content = $Content -replace '(?m)(TS_AUTHKEY=).*$', '${1}114514'
+        $Content = $Content -replace '(?m)(CF_DNS_API_TOKEN=).*$', '${1}1919810'
 
         # 4. 將修改後的內容寫回檔案
         $Utf8NoBom = New-Object System.Text.UTF8Encoding($false) # $false 代表不使用 BOM
