@@ -291,22 +291,38 @@ services:
   #     - 22000:22000
   #     - 21027:21027/udp
   #   restart: unless-stopped
-  # navidrome:
-  #   image: deluan/navidrome:latest
-  #   container_name: navidrome
-  #   user: 0:0 
-  #   ports:
-  #     - "4533:4533"
-  #   restart: unless-stopped
-  #   environment:
-  #     # Optional: put your config options customization here. Examples:
-  #     ND_SCANSCHEDULE: 1h
-  #     ND_LOGLEVEL: error  
-  #     ND_SESSIONTIMEOUT: 72h
-  #     ND_BASEURL: ""
-  #   volumes:
-  #     - "/opt/aquar/storages/aquarpool/apps/navidrome/data:/data"
-  #     - "/opt/aquar/storages/aquarpool/music:/music:ro"
+  navidrome:
+    image: deluan/navidrome:latest
+    container_name: navidrome
+    user: 0:0 
+    # ports:
+    #   - "4533:4533"
+    networks:
+      - app
+      - proxy
+    labels:
+      - traefik.enable=true
+
+      - traefik.http.routers.navidrome.rule=Host(`music.haiyaa-sobel.cc`)
+      - traefik.http.routers.navidrome.entrypoints=websecure
+
+      - traefik.http.routers.navidrome.tls=true # 啟用 TLS
+      - traefik.http.routers.navidrome.tls.certresolver=resolverX
+
+      - traefik.http.routers.navidrome.service=navidrome
+      - traefik.docker.network=proxy
+
+      - traefik.http.services.navidrome.loadbalancer.server.port=4533
+    restart: unless-stopped
+    environment:
+      # Optional: put your config options customization here. Examples:
+      ND_SCANSCHEDULE: 1h
+      ND_LOGLEVEL: error  
+      ND_SESSIONTIMEOUT: 72h
+      ND_BASEURL: ""
+    volumes:
+      - "/opt/aquar/storages/aquarpool/apps/navidrome/data:/data"
+      - "/opt/aquar/storages/aquarpool/music:/music:ro"
   rustdesk-hbbs:
     container_name: rustdesk-hbbs
     ports:
@@ -335,41 +351,41 @@ services:
     networks:
       - rustdesk-net
     restart: unless-stopped
-  qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:latest
-    container_name: qbittorrent
-    networks:
-      - app
-      - proxy
-    #ports:
-      #- "8082:8082"
-    labels:
-      - traefik.enable=true
+  # qbittorrent:
+  #   image: lscr.io/linuxserver/qbittorrent:latest
+  #   container_name: qbittorrent
+  #   networks:
+  #     - app
+  #     - proxy
+  #   #ports:
+  #     #- "8082:8082"
+  #   labels:
+  #     - traefik.enable=true
 
-      - traefik.http.routers.qbittorrent.rule=Host(`qb.haiyaa-sobel.cc`)
-      - traefik.http.routers.qbittorrent.entrypoints=websecure
+  #     - traefik.http.routers.qbittorrent.rule=Host(`qb.haiyaa-sobel.cc`)
+  #     - traefik.http.routers.qbittorrent.entrypoints=websecure
       
-      - traefik.http.routers.qbittorrent.tls=true # 啟用 TLS
-      - traefik.http.routers.qbittorrent.tls.certresolver=resolverX
+  #     - traefik.http.routers.qbittorrent.tls=true # 啟用 TLS
+  #     - traefik.http.routers.qbittorrent.tls.certresolver=resolverX
 
-      - traefik.http.routers.qbittorrent.service=qbittorrent
-      - traefik.docker.network=proxy
+  #     - traefik.http.routers.qbittorrent.service=qbittorrent
+  #     - traefik.docker.network=proxy
 
-      - traefik.http.services.qbittorrent.loadbalancer.server.port=8082
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ="Asia/Taipei"
-      - WEBUI_PORT=8082
-    volumes:
-      - /opt/aquar/storages/aquarpool/apps/qbittorrent/config:/config
-      - /opt/aquar/storages/aquarpool/qbdownloads:/downloads
-      # - /opt/vc/lib:/opt/vc/lib #optional
-    #ports:
-      #- 8082:8082
-      #- 6881:6881
-      #- 6881:6881/udp
-    restart: unless-stopped
+  #     - traefik.http.services.qbittorrent.loadbalancer.server.port=8082
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ="Asia/Taipei"
+  #     - WEBUI_PORT=8082
+  #   volumes:
+  #     - /opt/aquar/storages/aquarpool/apps/qbittorrent/config:/config
+  #     - /opt/aquar/storages/aquarpool/qbdownloads:/downloads
+  #     # - /opt/vc/lib:/opt/vc/lib #optional
+  #   #ports:
+  #     #- 8082:8082
+  #     #- 6881:6881
+  #     #- 6881:6881/udp
+  #   restart: unless-stopped
   immich-server:
     container_name: immich_server
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
