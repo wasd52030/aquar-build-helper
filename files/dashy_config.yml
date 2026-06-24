@@ -21,10 +21,10 @@ sections:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/jellyfin.png
         url: https://jellyfin.haiyaa-sobel.cc/
         
-      # - title: Navidrome
-      #   description: Music Server
-      #   icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/navidrome.png
-      #   url: http://192.168.0.196:4533
+      - title: Navidrome
+        description: Music Server
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/navidrome.png
+        url: https://music.haiyaa-sobel.cc
       
       - title: Immich
         description: Photo Backup
