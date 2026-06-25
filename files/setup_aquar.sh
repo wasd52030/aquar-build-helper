@@ -135,6 +135,22 @@ touch /opt/aquar/storages/aquarpool/apps/traefik/letsencrypt/acme.json
 chmod 600 /opt/aquar/storages/aquarpool/apps/traefik/letsencrypt/acme.json
 
 
+# immich-machine-learning hwaccel
+touch /opt/aquar/src/docker-compose/immich.hwaccel.ml.yml
+cat > /opt/aquar/src/docker-compose/immich.hwaccel.ml.yml <<'EOF'
+version: '3.8'
+
+services:
+  openvino:
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - /dev/dri:/dev/dri
+    group_add:
+      - 993
+EOF
+
+
 echo '********配置docker-compose********'
 mkdir -p /opt/aquar/src/docker-compose/
 touch /opt/aquar/src/docker-compose/docker-compose.yml
@@ -246,6 +262,11 @@ services:
   jellyfin:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin
+    devices:
+      - /dev/dri:/dev/dri
+    user: 1000:1000
+    group_add:
+      - 993
     networks:
       - app
       - proxy
@@ -266,13 +287,12 @@ services:
       - traefik.http.services.jellyfin.loadbalancer.server.port=8096
     environment:
       - TZ=Asia/Taipei
+      # - JELLYFIN_FFMPEG_VAAPI_DEVICE=/dev/dri/renderD128
       #- JELLYFIN_PublishedServerUrl="http://192.168.0.118:8096" #optional
     volumes:
       - /opt/aquar/storages/aquarpool/apps/jellyfin/config:/config
       - /opt/aquar/storages/aquarpool/apps/jellyfin/cache:/cache
       - /opt/aquar/storages/aquarpool/movies:/media
-    devices:
-      - /dev/dri:/dev/dri
     restart: unless-stopped
   # syncthing:
   #   image: ghcr.io/linuxserver/syncthing
@@ -390,8 +410,13 @@ services:
     container_name: immich_server
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     # extends:
-    #   file: hwaccel.transcoding.yml
+    #   file: immich.hwaccel.ml.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
+    extends:
+      file: immich.hwaccel.ml.yml
+      service: openvino
+    devices:
+      - /dev/dri:/dev/dri    
     networks:
       - core
       - app
@@ -418,6 +443,7 @@ services:
     depends_on:
       - immich-redis
       - immich-database
+      # - immich-machine-learning
     environment:
       UPLOAD_LOCATION: /opt/aquar/storages/aquarpool/apps/immich/library
       TZ: Asia/Taipei
@@ -429,15 +455,25 @@ services:
   #   container_name: immich_machine_learning
   #   # For hardware acceleration, add one of -[armnn, cuda, rocm, openvino, rknn] to the image tag.
   #   # Example tag: v2-cuda
-  #   image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
+  #   image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}-openvino
   #   # extends: # uncomment this section for hardware acceleration - see https://docs.immich.app/features/ml-hardware-acceleration
   #   #   file: hwaccel.ml.yml
   #   #   service: cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference - use the '-wsl' version for WSL2 where applicable
+  #   extends:
+  #     file: immich.hwaccel.ml.yml
+  #     service: openvino
+  #   devices:
+  #     - /dev/dri:/dev/dri
+  #   # user: 1000:1000
   #   volumes:
   #     - /opt/aquar/storages/aquarpool/apps/immich/immich_machinelearning/model-cache:/cache
+  #   networks:
+  #     - core
   #   environment:
   #     IMMICH_VERSION: v2
   #     TZ: Asia/Taipei
+  #     IMMICH_DEVICE_NAME: GPU
+  #     MACHINE_LEARNING_OPENVINO_PRECISION: FP16
   #   restart: unless-stopped
   #   healthcheck:
   #     disable: false
